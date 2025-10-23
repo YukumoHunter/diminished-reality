@@ -108,4 +108,5 @@ def handle_detect_frame(data):
         emit('detection_error', {'error': str(e)})
 
 if __name__ == '__main__':
+    print("Starting server on 0.0.0.0:8094")
     socketio.run(app, host='0.0.0.0', port=8094, debug=False)

@@ -6,15 +6,15 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 const port = 8094;
-const target_ip = 'http://145.100.134.14:8094';
+const target_ip = 'http://145.100.134.176:8094';
 
 // Path to your build folder
-const buildPath = path.join(__dirname, 'front-end/dist');
+const buildPath = path.join(__dirname, 'dist');
 
 // SSL certificate paths
 const options = {
-  key: fs.readFileSync(path.resolve(__dirname, 'certs/chimay.science.uva.nl.key')),  
-  cert: fs.readFileSync(path.resolve(__dirname, 'certs/chimay_science_uva_nl.pem'))
+  key: fs.readFileSync(path.resolve(__dirname, 'certs/chimay.key')),
+  cert: fs.readFileSync(path.resolve(__dirname, 'certs/chimay.pem'))
 };
 
 // Serve static files
