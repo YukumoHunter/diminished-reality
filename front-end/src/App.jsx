@@ -15,11 +15,12 @@ function App() {
   const containerRef = useRef(null);
   const socketRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentCount, setCount] = useState(0);
 
   // For RTT testing.
   const pendingRequests = useRef(new Map());
   const rttArray = useRef([]);
-  const MAX_RTT_RECORDS = 1000; 
+  const MAX_RTT_RECORDS = 1000;
 
   // Settings values
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -43,6 +44,9 @@ function App() {
     try {
       const imageSrc = webcamRef.current.getScreenshot();
       if (!imageSrc) return;
+      if (!(currentCount % 3) == 0) return;
+
+      setCount(currentCount + 1);
 
       const requestId = Date.now() + Math.random();
       const startTime = performance.now();
@@ -91,7 +95,7 @@ function App() {
       if (!document.fullscreenElement) {
         containerRef.current.requestFullscreen()
           .then(() => setIsFullscreen(true))
-      } 
+      }
       else {
         document.exitFullscreen()
           .then(() => setIsFullscreen(false));
@@ -102,7 +106,7 @@ function App() {
   const handleResize = () => {
     const video = webcamRef.current.video;
     const canvas = canvasRef.current;
-    
+
     if (video && canvas) {
       const videoRect = video.getBoundingClientRect();
       canvas.width = videoRect.width;
@@ -134,7 +138,7 @@ function App() {
         pendingRequests.current.delete(requestId);
 
         if (rttArray.current.length < MAX_RTT_RECORDS) {
-          console.log("push")
+          //console.log("push")
           rttArray.current.push(RTT);
         }
         else {
@@ -174,7 +178,7 @@ function App() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   // Handle fullscreen.
   useEffect(() => {
     const fullscreenHandler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -184,7 +188,7 @@ function App() {
 
   // Detect the objects on the screen every interval.
   useEffect(() => {
-    const detectionInterval = setInterval(detect, 200);
+    const detectionInterval = setInterval(detect, 50);
     return () => clearInterval(detectionInterval);
   }, []);
 
@@ -202,7 +206,7 @@ function App() {
   return (
     <div className="container" ref={containerRef}>
       <div className="header">
-        <GoGear className="gear-icon" onClick={() => setSettingsOpen(!settingsOpen)}/>
+        <GoGear className="gear-icon" onClick={() => setSettingsOpen(!settingsOpen)} />
         {isFullscreen ? (
           <MdFullscreenExit className="control-icon" onClick={toggleFullscreen} />
         ) : (
@@ -217,11 +221,12 @@ function App() {
         width={640}
         height={640}
         screenshotFormat="image/jpeg"
+        screenshotQuality={0.7}
         videoConstraints={{
           facingMode: "environment",
         }}
       />
-      <canvas className="canvas-overlay" ref={canvasRef}/>
+      <canvas className="canvas-overlay" ref={canvasRef} />
 
       <Settings
         isOpen={settingsOpen}

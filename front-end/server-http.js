@@ -1,5 +1,5 @@
 const express = require('express');
-const https = require('https');
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { createProxyMiddleware } = require('http-proxy-middleware');
@@ -10,12 +10,6 @@ const target_ip = 'http://0.0.0.0:8094';
 
 // Path to your build folder
 const buildPath = path.join(__dirname, 'dist');
-
-// SSL certificate paths
-const options = {
-  key: fs.readFileSync(path.resolve(__dirname, 'certs/chimay.key')),
-  cert: fs.readFileSync(path.resolve(__dirname, 'certs/chimay.pem'))
-};
 
 // Serve static files
 app.use(express.static(buildPath));
@@ -33,7 +27,7 @@ app.get(/(.*)/, (req, res) => {
 });
 
 // Create HTTPS server
-const server = https.createServer(options, app);
+const server = http.createServer(app);
 
 server.listen(port, () => {
   console.log(`Server running at https://chimay.science.uva.nl:${port}`);
