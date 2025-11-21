@@ -1,6 +1,5 @@
 import asyncio
 import websockets
-import cv2
 import numpy as np
 import torch
 from rfdetr import RFDETRBase
@@ -20,7 +19,7 @@ SSL_KEY_PATH = BASE_DIR / "key.pem"
 model = RFDETRBase(pretrain_weights="model/checkpoint.pth")
 model.optimize_for_inference(compile=False)
 
-jpeg = TurboJPEG()
+jpeg = TurboJPEG(r"C:\libjpeg-turbo-gcc64\bin\libturbojpeg.dll")
 
 # Create a ThreadPool for running inference without blocking the asyncio event loop
 # This prevents the websocket from timing out during heavy computation
