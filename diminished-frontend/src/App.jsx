@@ -151,8 +151,8 @@ function App() {
       console.error('WebSocket error:', error);
     };
 
-    socket.onclose = () => {
-      console.log('WebSocket connection closed.');
+    socket.onclose = (event) => {
+      console.log('WebSocket connection closed.:', error);
     };
 
     return () => {
