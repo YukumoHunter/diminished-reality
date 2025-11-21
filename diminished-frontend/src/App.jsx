@@ -14,6 +14,8 @@ function App() {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isMovingTooFast, setIsMovingTooFast] = useState(false);
+  const motionTimeoutRef = useRef(null);
 
   // For RTT testing.
   const pendingRequests = useRef(new Map());
@@ -173,6 +175,63 @@ function App() {
     return () => document.removeEventListener('fullscreenchange', fullscreenHandler);
   }, []);
 
+  // Motion detection
+  useEffect(() => {
+    const setupMotionDetection = () => {
+      if (window.DeviceMotionEvent) {
+        const handleMotionEvent = (event) => {
+          const { accelerationIncludingGravity, rotationRate } = event;
+          
+          const accel = accelerationIncludingGravity || { x: 0, y: 0, z: 0 };
+          const rotRate = rotationRate || { alpha: 0, beta: 0, gamma: 0 };
+
+          const accelerationMagnitude = Math.sqrt(accel.x * accel.x + accel.y * accel.y + accel.z * accel.z);
+          const rotationMagnitude = Math.sqrt(rotRate.alpha * rotRate.alpha + rotRate.beta * rotRate.beta + rotRate.gamma * rotRate.gamma);
+
+          const ACCEL_THRESHOLD = 20; // m/s^2
+          const ROTATION_THRESHOLD = 270; // deg/s
+
+          if (accelerationMagnitude > ACCEL_THRESHOLD || rotationMagnitude > ROTATION_THRESHOLD) {
+            setIsMovingTooFast(true);
+
+            if (motionTimeoutRef.current) clearTimeout(motionTimeoutRef.current);
+            
+            motionTimeoutRef.current = setTimeout(() => {
+              setIsMovingTooFast(false);
+            }, 1000);
+          }
+        };
+        
+        if (typeof DeviceMotionEvent.requestPermission === 'function') {
+          DeviceMotionEvent.requestPermission()
+            .then(permissionState => {
+              if (permissionState === 'granted') {
+                window.addEventListener('devicemotion', handleMotionEvent);
+              }
+            })
+            .catch(console.error);
+        } else {
+          window.addEventListener('devicemotion', handleMotionEvent);
+        }
+
+        return () => window.removeEventListener('devicemotion', handleMotionEvent);
+      } else {
+        console.log("Device motion not supported on this device.");
+      }
+    };
+
+    const cleanupMotion = setupMotionDetection();
+
+    return () => {
+      if (cleanupMotion) {
+        cleanupMotion();
+      }
+      if (motionTimeoutRef.current) {
+        clearTimeout(motionTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Detect the objects on the screen every interval.
   useEffect(() => {
     const detectionInterval = setInterval(detect, 200);
@@ -191,7 +250,7 @@ function App() {
   }, [diminishMethod, diminishEffect, nutriScoreBaseline, useOutline, outlineColor]);
 
   return (
-    <div className="container" ref={containerRef}>
+    <div className={`container ${isMovingTooFast ? 'moving-too-fast' : ''}`} ref={containerRef}>
       <div className="header">
         <GoGear className="gear-icon" onClick={() => setSettingsOpen(!settingsOpen)}/>
         {isFullscreen ? (
