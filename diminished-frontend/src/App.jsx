@@ -7,7 +7,7 @@ import { diminishObject } from './DiminishObject';
 import { isIOS } from 'react-device-detect';
 import "./App.css";
 
-const socket = new WebSocket('wss://localhost:5174');
+const socket = new WebSocket('wss://diminish.soaratorium.com:5174');
 
 function App() {
   const webcamRef = useRef(null);
