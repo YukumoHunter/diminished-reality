@@ -11,6 +11,7 @@ import pathlib
 from concurrent.futures import ThreadPoolExecutor
 import onnxruntime as ort
 import cv2
+import os
 
 BASE_DIR = pathlib.Path(__file__).parent.parent / "cert"
 SSL_CERT_PATH = BASE_DIR / "cert.pem"
@@ -42,8 +43,10 @@ output_map = {}
 for i, node in enumerate(session.get_outputs()):
     output_map[node.name] = i
 
-# jpeg = TurboJPEG(r"C:\libjpeg-turbo-gcc64\bin\libturbojpeg.dll")
-jpeg = TurboJPEG()
+if os.name == 'nt':
+    jpeg = TurboJPEG(r"C:\libjpeg-turbo-gcc64\bin\libturbojpeg.dll")
+else:
+    jpeg = TurboJPEG()
 
 # Create a ThreadPool for running inference without blocking the asyncio event loop
 # This prevents the websocket from timing out during heavy computation
