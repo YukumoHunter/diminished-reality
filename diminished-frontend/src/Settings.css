@@ -87,3 +87,35 @@
   text-align: center;
   font-family: sans-serif;
 }
+
+.setting-section {
+  margin-top: 30px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.setting-section h3 {
+  font-size: 3vh;
+  font-family: sans-serif;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 20px;
+  font-size: 2.5vh;
+  font-family: sans-serif;
+}
+
+.product-item input[type="checkbox"] {
+  transform: scale(1.5);
+  margin-right: 15px;
+}

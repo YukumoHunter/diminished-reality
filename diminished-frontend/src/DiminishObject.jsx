@@ -7,36 +7,28 @@ export const DIMINISH_EFFECT = {
     DESATURATE: 3
 };
 
-export const DIMINISH_METHODS = {
-    THRESHOLD: 0,
-    DYNAMIC: 1
-};
-
 export const OUTLINE = {
     OFF: 0,
     HEALTHY: 1,
     ALL: 2
 }
 
-const getDiminishStrength = (nutri_score, effectType) => {
+const getDiminishStrength = (isHealthy, effectType) => {
+    // If healthy, no diminish (strength 0).
+    // If unhealthy, max strength.
+    if (isHealthy) return 0;
+
     const EFFECT_STRENGTH_MAP = {
-        [DIMINISH_EFFECT.NONE]:        [0, 0, 0, 0, 0],
-        [DIMINISH_EFFECT.BLUR]:        [0, 1, 5, 10, 20],
-        [DIMINISH_EFFECT.OVERLAY]:     [0, 0.3, 0.5, 0.7, 1],
-        [DIMINISH_EFFECT.DESATURATE]:  [0, 0.3, 0.6, 0.8, 1]
+        [DIMINISH_EFFECT.NONE]:        0,
+        [DIMINISH_EFFECT.BLUR]:        20, // Max blur
+        [DIMINISH_EFFECT.OVERLAY]:     1,  // Max overlay
+        [DIMINISH_EFFECT.DESATURATE]:  1   // Max desaturation
     };
-    return EFFECT_STRENGTH_MAP[effectType][nutri_score];
+    return EFFECT_STRENGTH_MAP[effectType];
 };
 
-const getOutlineColor = (nutri_score) => {
-    const OUTLINE_COLOR_MAP = {
-        0: 'green',
-        1: 'lightgreen',
-        2: 'yellow',
-        3: 'orange',
-        4: 'red'
-    };
-    return OUTLINE_COLOR_MAP[nutri_score];
+const getOutlineColor = (isHealthy) => {
+    return isHealthy ? 'green' : 'red';
 };
 
 // Blur function for IOS
@@ -173,10 +165,10 @@ const applyDesaturation = (bbox, ctx, video, desaturationStrength) => {
     }
 };
 
-const applyOutline = (bbox, ctx, outlineColor, nutri_score) => {
+const applyOutline = (bbox, ctx, outlineColor, isHealthy) => {
     let usedColor = outlineColor;
-    if (outlineColor == 'nutri-score_based') {
-        usedColor = getOutlineColor(nutri_score);
+    if (outlineColor === 'health_based') {
+        usedColor = getOutlineColor(isHealthy);
     }
 
     const [x, y, w, h] = bbox;
@@ -185,28 +177,30 @@ const applyOutline = (bbox, ctx, outlineColor, nutri_score) => {
     ctx.strokeRect(x, y, w, h);
 };
 
-export const diminishObject = (canvas, video, detections, diminishMethod,
-                               diminishType, nutriScoreBaseline, useOutline,
-                               outlineColor) => {
+export const diminishObject = (canvas, video, detections,
+                               diminishType, useOutline,
+                               outlineColor, classOverrides) => {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     detections.forEach(det => {
-        let nutri_score = det.nutri_score;
+        const className = det.class;
+        let isHealthy = det.in_schijf_van_vijf;
+        
+        // Apply local override if it exists
+        if (classOverrides && classOverrides[className] !== undefined) {
+            isHealthy = classOverrides[className];
+        }
 
         // Apply outline.
-        if (useOutline == OUTLINE.HEALTHY && nutri_score <= nutriScoreBaseline) {
-            applyOutline(det.bbox, ctx, outlineColor, nutri_score);
+        if (useOutline === OUTLINE.HEALTHY && isHealthy) {
+            applyOutline(det.bbox, ctx, outlineColor, isHealthy);
         }
-        else if (useOutline == OUTLINE.ALL) {
-            applyOutline(det.bbox, ctx, outlineColor, nutri_score);
+        else if (useOutline === OUTLINE.ALL) {
+            applyOutline(det.bbox, ctx, outlineColor, isHealthy);
         }
 
-        // Threshold method (Set nutri-score to either min or max).
-        if (diminishMethod == DIMINISH_METHODS.THRESHOLD) {
-            nutri_score = nutri_score > nutriScoreBaseline ? 4 : 0
-        }
-        const diminish_strength = getDiminishStrength(nutri_score, diminishType);
+        const diminish_strength = getDiminishStrength(isHealthy, diminishType);
 
         switch(diminishType) {
             case DIMINISH_EFFECT.NONE:

@@ -24,18 +24,16 @@ function App() {
 
   // Settings values
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [diminishMethod, setDiminishMethod] = useState(0);   // 0 = Threshold, 1 = Dynamic
   const [diminishEffect, setDiminishEffect] = useState(1);
-  const [nutriScoreBaseline, setNutriScoreBaseline] = useState(0);
   const [useOutline, setUseOutline] = useState(0); // 0 = Off, 1 = Healthy, 2 = All
-  const [outlineColor, setOutlineColor] = useState('nutri-score_based');
+  const [outlineColor, setOutlineColor] = useState('health_based');
+  const [classOverrides, setClassOverrides] = useState({});
 
   const settingsRef = useRef({
-    diminishMethod,
     diminishEffect,
-    nutriScoreBaseline,
     useOutline,
-    outlineColor
+    outlineColor,
+    classOverrides
   });
 
   const detect = useCallback(async () => {
@@ -138,11 +136,10 @@ function App() {
           canvasRef.current,
           webcamRef.current.video,
           data.detections,
-          settingsRef.current.diminishMethod,
           settingsRef.current.diminishEffect,
-          settingsRef.current.nutriScoreBaseline,
           settingsRef.current.useOutline,
-          settingsRef.current.outlineColor
+          settingsRef.current.outlineColor,
+          settingsRef.current.classOverrides
         );
       }
     };
@@ -241,13 +238,12 @@ function App() {
   // Update the ref when settings change.
   useEffect(() => {
     settingsRef.current = {
-      diminishMethod,
       diminishEffect,
-      nutriScoreBaseline,
       useOutline,
-      outlineColor
+      outlineColor,
+      classOverrides
     };
-  }, [diminishMethod, diminishEffect, nutriScoreBaseline, useOutline, outlineColor]);
+  }, [diminishEffect, useOutline, outlineColor, classOverrides]);
 
   return (
     <div className={`container ${isMovingTooFast ? 'moving-too-fast' : ''}`} ref={containerRef}>
@@ -276,16 +272,14 @@ function App() {
       <Settings
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        diminishMethod={diminishMethod}
-        setDiminishMethod={setDiminishMethod}
         diminishEffect={diminishEffect}
         setDiminishEffect={setDiminishEffect}
-        nutriScoreBaseline={nutriScoreBaseline}
-        setNutriScoreBaseline={setNutriScoreBaseline}
         useOutline={useOutline}
         setUseOutline={setUseOutline}
         outlineColor={outlineColor}
         setOutlineColor={setOutlineColor}
+        classOverrides={classOverrides}
+        setClassOverrides={setClassOverrides}
       />
     </div>
   );

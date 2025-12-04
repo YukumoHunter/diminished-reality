@@ -1,13 +1,25 @@
 import React from 'react';
+import { ALL_PRODUCTS, SCHIJF_VAN_VIJF_DEFAULTS } from './constants';
 import './Settings.css';
 
 export default function SettingsPanel({ isOpen, onClose,
-                                        diminishMethod, setDiminishMethod,
                                         diminishEffect, setDiminishEffect,
-                                        nutriScoreBaseline, setNutriScoreBaseline,
                                         useOutline, setUseOutline,
-                                        outlineColor, setOutlineColor
+                                        outlineColor, setOutlineColor,
+                                        classOverrides, setClassOverrides
                                         }) {
+
+  const handleClassToggle = (productName) => {
+    const currentStatus = classOverrides[productName] !== undefined 
+        ? classOverrides[productName] 
+        : SCHIJF_VAN_VIJF_DEFAULTS[productName];
+    
+    setClassOverrides({
+        ...classOverrides,
+        [productName]: !currentStatus
+    });
+  };
+
   return (
     <div className={`settings-panel ${isOpen ? 'open' : ''}`}>
         <div className="settings-header">
@@ -15,20 +27,6 @@ export default function SettingsPanel({ isOpen, onClose,
             <button onClick={onClose} className="close-button">×</button>
         </div>
         <div className="settings-content">
-            {/* ---------------- Diminish Method ------------------- */}
-            <div className="setting-option">
-            <label className="setting-label">Diminish method: </label>
-            
-            <select
-                className="setting-select"
-                value={diminishMethod} 
-                onChange={(e) => setDiminishMethod(Number(e.target.value))}
-            >
-                <option value={0}>Threshold</option>
-                <option value={1}>Dynamic</option>
-            </select>
-            </div>
-
             {/* ---------------- Diminish Type ------------------- */}
             <div className="setting-option">
             <label className="setting-label">Diminish effect: </label>
@@ -41,22 +39,6 @@ export default function SettingsPanel({ isOpen, onClose,
                 <option value={1}>Blur</option>
                 <option value={2}>Overlay</option>
                 <option value={3}>Desaturate</option>
-            </select>
-            </div>
-
-            {/* ---------------- Nutri-score baseline ------------------- */}
-            <div className="setting-option">
-            <label className="setting-label">*Nutri-score baseline: </label>
-            <select
-                className="setting-select"
-                value={nutriScoreBaseline} 
-                onChange={(e) => setNutriScoreBaseline(Number(e.target.value))}
-            >
-                <option value={0}>A</option>
-                <option value={1}>B</option>
-                <option value={2}>C</option>
-                <option value={3}>D</option>
-                <option value={4}>E</option>
             </select>
             </div>
 
@@ -74,7 +56,7 @@ export default function SettingsPanel({ isOpen, onClose,
             </select>
             </div>
 
-            {/* ---------------- Nutri-score baseline ------------------- */}
+            {/* ---------------- Outline color ------------------- */}
             <div className="setting-option">
             <label className="setting-label">**Outline color: </label>
             <select
@@ -82,15 +64,39 @@ export default function SettingsPanel({ isOpen, onClose,
                 value={outlineColor} 
                 onChange={(e) => setOutlineColor(e.target.value)}
             >
-                <option value={'nutri-score_based'}>Nutri-score based</option>
+                <option value={'health_based'}>Health based</option>
                 <option value={'gray'}>Gray</option>
                 <option value={'green'}>Green</option>
                 <option value={'red'}>Red</option>
             </select>
             </div>
+
+            {/* ---------------- Product Settings ------------------- */}
+            <div className="setting-section">
+                <h3>Product Settings (Schijf van Vijf)</h3>
+                <div className="product-list">
+                    {ALL_PRODUCTS.map(product => {
+                        const isHealthy = classOverrides[product] !== undefined 
+                            ? classOverrides[product] 
+                            : SCHIJF_VAN_VIJF_DEFAULTS[product];
+                        
+                        return (
+                            <div key={product} className="product-item">
+                                <label>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={isHealthy}
+                                        onChange={() => handleClassToggle(product)}
+                                    />
+                                    {product}
+                                </label>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
         <div className="settings-footer">
-            <p>*Only used with Threshold diminsh method</p>
             <p>**Only used with Outline on</p>
         </div>
     </div>
