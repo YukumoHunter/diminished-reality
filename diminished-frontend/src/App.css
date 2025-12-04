@@ -63,9 +63,15 @@
 
 
 
+
+.canvas-overlay.feather-edges {
+  filter: url(#feather);
+}
+
 .moving-too-fast {
 
   border: 5px solid red;
+
 
   box-sizing: border-box;
 
