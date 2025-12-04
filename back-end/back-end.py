@@ -31,7 +31,7 @@ providers = [
 ]
 
 print("Loading inference_model.onnx...")
-session = ort.InferenceSession("inference_model.onnx", providers=providers)
+session = ort.InferenceSession("model/model.onnx", providers=providers)
 
 # Analyze Inputs
 input_name = session.get_inputs()[0].name
@@ -43,7 +43,7 @@ output_map = {}
 for i, node in enumerate(session.get_outputs()):
     output_map[node.name] = i
 
-if os.name == 'nt':
+if os.name == "nt":
     jpeg = TurboJPEG(r"C:\libjpeg-turbo-gcc64\bin\libturbojpeg.dll")
 else:
     jpeg = TurboJPEG()
@@ -205,6 +205,7 @@ def run_inference_sync(image_bytes, request_id):
     Synchronous function to handle image decoding and inference.
     This runs in a separate thread to keep the Websocket heartbeat alive.
     """
+
     def softmax(x):
         e_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
         return e_x / e_x.sum(axis=-1, keepdims=True)
@@ -259,27 +260,32 @@ def run_inference_sync(image_bytes, request_id):
                     continue
 
                 class_name = CLASS_MAPPING[mapped_id]
-                
+
                 # Unpack Box: [cx, cy, w, h] (Normalized)
                 cx, cy, w, h = boxes[i]
 
                 # Convert to Pixel Coordinates [x1, y1, x2, y2]
                 # Output API expects [x, y, w, h]
-                
+
                 x_center = cx * original_w
                 y_center = cy * original_h
                 width_px = w * original_w
                 height_px = h * original_h
-                
+
                 x1 = x_center - width_px / 2
                 y1 = y_center - height_px / 2
-                
+
                 detections.append(
                     {
                         "class": class_name,
                         "confidence": float(score),
                         "in_schijf_van_vijf": SCHIJF_VAN_VIJF.get(class_name, True),
-                        "bbox": [float(x1), float(y1), float(width_px), float(height_px)],
+                        "bbox": [
+                            float(x1),
+                            float(y1),
+                            float(width_px),
+                            float(height_px),
+                        ],
                     }
                 )
 
